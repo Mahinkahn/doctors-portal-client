@@ -8,7 +8,7 @@ const Banner = () => {
 
             <div className="relative mx-auto flex flex-col-reverse lg:flex-row px-4 py-10 md:py-32 sm:px-6 lg:flex  lg:items-center lg:justify-around lg:px-8">
                 <div className="max-w-xl text-center sm:text-left">
-                    <h1 className="text-3xl font-extrabold sm:text-5xl font-serif">
+                    <h1 className="text-3xl font-bold sm:text-5xl ">
                         Your New Smile Starts Here
                     </h1>
 
