@@ -25,7 +25,6 @@ const MyAppointment = () => {
             <h3 className="text-3xl mb-5">My Appointments</h3>
             <div className="overflow-x-auto">
                 <table className="table w-full">
-
                     <thead>
                         <tr>
                             <th></th>
@@ -37,14 +36,13 @@ const MyAppointment = () => {
                     </thead>
                     <tbody>
                         {
-                            bookings.map((booking, i) =>
-                                <tr key={booking._id}>
-                                    <th>{i + 1}</th>
-                                    <td>{booking.patient}</td>
-                                    <td>{booking.treatment}</td>
-                                    <td>{booking.appointmentDate}</td>
-                                    <td>{booking.slot}</td>
-                                </tr>)
+                            bookings.map((booking, i) => <tr key={booking._id}>
+                                <th>{i + 1}</th>
+                                <td>{booking.patient}</td>
+                                <td>{booking.treatment}</td>
+                                <td>{booking.appointmentDate}</td>
+                                <td>{booking.slot}</td>
+                            </tr>)
                         }
                     </tbody>
                 </table>
