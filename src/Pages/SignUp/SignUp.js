@@ -6,95 +6,150 @@ import { AuthContext } from '../../contexts/AuthProvider';
 import useToken from '../../hooks/useToken';
 
 const SignUp = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm();
-    const { createUser, updateUser } = useContext(AuthContext);
-    const [signUpError, setSignUPError] = useState('');
-    const [createdUserEmail, setCreatedUserEmail] = useState('')
-    const [token] = useToken(createdUserEmail);
-    const navigate = useNavigate();
+    const { createUser, googleLogin, updateName } = useContext(AuthContext);
+    const [createUserEmail, setCreateUserEmail] = useState("");
+    const [token] = useToken(createUserEmail);
+    const [error, setError] = useState("");
+    const nagivate = useNavigate();
+    const {
+        formState: { errors },
+        register,
+        handleSubmit,
+    } = useForm();
 
     if (token) {
-        navigate('/');
+        nagivate("/");
     }
 
-    const handleSignUp = (data) => {
-        setSignUPError('')
+    const handleRegister = (data) => {
+        console.log(data);
         createUser(data.email, data.password)
-            .then(result => {
+            .then((result) => {
                 const user = result.user;
                 console.log(user);
-                toast('User Created Successfully.')
-                const userInfo = {
-                    displayName: data.name
-                }
-                updateUser(userInfo)
-                    .then(() => {
-                        saveUser(data.name, data.email);
-                    })
-                    .catch(err => console.log(err));
+                updateName(data.name)
+                    .then(() => { })
+                    .catch((err) => {
+                        setError(err.message);
+                        console.log(err);
+                    });
+                toast.success("Account Create Successfully");
+                handleSaveUser(data.name, data.email);
             })
-            .catch(error => {
-                console.log(error)
-                setSignUPError(error.message)
+            .catch((err) => {
+                setError(err.message);
+                console.log(err);
             });
-    }
+    };
 
-    const saveUser = (name, email) => {
-        const user = { name, email };
-        fetch('http://localhost:5000/users', {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify(user)
-        })
-            .then(res => res.json())
-            .then(data => {
-                setCreatedUserEmail(email);
-
+    const handleGoogleLogin = () => {
+        googleLogin()
+            .then((result) => {
+                const user = result.user;
+                console.log(user);
+                toast.success("Account Create Successfully");
+                nagivate("/");
             })
-    }
+            .catch((err) => {
+                setError(err.message);
+                console.log(err);
+            });
+    };
 
+    const handleSaveUser = (name, email) => {
+        const user = { name, email };
+        fetch("http://localhost:5000/users", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(user),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setCreateUserEmail(email);
+                console.log(data);
+            });
+    };
+
+    /*  const getUserToken=email=>{
+      fetch(`https://doctors-portal-server-seven-xi.vercel.app/jwt?email=${email}`)
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.accessToken){
+          localStorage.setItem('accessToken', data.accessToken)
+          nagivate("/")
+        }
+      })
+    } */
 
     return (
-        <div className='h-[800px] flex justify-center items-center'>
-            <div className='w-96 p-7'>
-                <h2 className='text-xl text-center'>Sign Up</h2>
-                <form onSubmit={handleSubmit(handleSignUp)}>
-                    <div className="form-control w-full max-w-xs">
-                        <label className="label">
-                            <span className="label-text">Name</span>
-                        </label>
-                        <input type="text" {...register("name", {
-                            required: "name is required"
-                        })} className="input input-bordered w-full max-w-xs" />
-                        {errors.name && <p className='text-red-600'>{errors.name.message}</p>}
-                    </div>
-                    <div className="form-control w-full max-w-xs">
-                        <label className="label">
-                            <span className="label-text">Email</span>
-                        </label>
-                        <input type="email" {...register("email", { required: "email is required" })} className="input input-bordered w-full max-w-xs" />
-                        {errors.email && <p className='text-red-600'>{errors.email.message}</p>}
-                    </div>
-                    <div className="form-control w-full max-w-xs">
-                        <label className="label">
-                            <span className="label-text">Password</span>
-                        </label>
-                        <input type="password" {...register("password", {
-                            required: "Passeord id required",
-                            minLength: { value: 6, message: "Password must be 6 characters long" },
-                            pattern: { value: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])/, message: 'Password must have uppercase number and special characters' }
+        <div className=" h-screen flex justify-center items-center my-[100px] lg:my-0 w-[96%] mx-auto">
+            <div className="w-[385px] h-[650px] border border-gray-400 shadow-2xl rounded-lg p-[29px]">
+                <form onSubmit={handleSubmit(handleRegister)}>
+                    <h1 className="mb-[20px] text-2xl font-bold font-serif">Register</h1>
+                    <label className="label">
+                        <span className="text-md text-black">Name</span>
+                    </label>
+                    <input
+                        type="text"
+                        className="input input-bordered w-full max-w-xs"
+                        {...register("name", { required: "Name is required" })}
+                    />
+                    {errors.name && (
+                        <p className="text-red-600 text-start">{errors.name?.message}</p>
+                    )}
+                    <label className="label">
+                        <span className="text-md text-black">Email</span>
+                    </label>
+                    <input
+                        type="email"
+                        className="input input-bordered w-full max-w-xs"
+                        {...register("email", { required: "Email Address is required" })}
+                    />
+                    {errors.email && (
+                        <p className="text-red-600 text-start">{errors.email?.message}</p>
+                    )}
+                    <label className="label">
+                        <span className="text-md text-black">Password</span>
+                    </label>
+                    <input
+                        type="password"
+                        className="input input-bordered w-full max-w-xs"
+                        {...register("password", {
+                            required: "Password is required",
+                            minLength: {
+                                value: 6,
+                                message: "Password need must 6 corrector or longer",
+                            },
+                            pattern: {
+                                value: /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])/,
+                                message:
+                                    "Your password should be number,special corrector & upper case",
+                            },
                         })}
-                            className="input input-bordered w-full max-w-xs" />
-                        {errors.password && <p className='text-red-600'>{errors.password.message}</p>}
-                    </div>
-                    <input className='btn btn-accent w-full mt-4' value="Sign Up" type="submit" />
-                    {signUpError && <p className='text-red-600'>{signUpError}</p>}
+                    />
+                    {errors.password && (
+                        <p className="text-red-600 text-start">
+                            {errors.password?.message}
+                        </p>
+                    )}
+                    {error && <p className="text-red-600 text-start">{error}</p>}
+                    <input className="btn w-full mt-5" type="submit" value="Register" />
                 </form>
-                <p className='mt-2'>Areedy have an account? <Link className='text-secondary' to="/login">Please Login</Link></p>
+                <div className="flex gap-2 mt-4">
+                    <p>Already have account?</p>
+                    <Link to="/login">
+                        <button className="text-[#19D3AE] hover:underline">Login</button>
+                    </Link>
+                </div>
                 <div className="divider">OR</div>
-                <button className='btn btn-outline w-full '>CONTINUE WITH GOOGLE</button>
+                <button
+                    onClick={handleGoogleLogin}
+                    className="btn w-full mt-[20px] btn-outline"
+                >
+                    CONTINUE WITH GOOGLE
+                </button>
             </div>
         </div>
     );

@@ -1,71 +1,147 @@
 import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthProvider';
 import useToken from '../../hooks/useToken';
 
 const Login = () => {
-    const { register, formState: { errors }, handleSubmit } = useForm();
-    const { signIn } = useContext(AuthContext);
-    const [loginError, setLoginError] = useState('');
-    const [loginUserEmail, setLoginUserEmail] = useState('');
-    const [token] = useToken(loginUserEmail);
-    const location = useLocation();
+    const [error, setError] = useState("");
+    const [forget, setForget] = useState("");
+    const [LoginUserEmail, setLoginUserEmail] = useState("");
+    const [token] = useToken(LoginUserEmail);
+    const { googleLogin, logInUser, resetPass } = useContext(AuthContext);
     const navigate = useNavigate();
-
-    const from = location.state?.form?.pathname || '/';
-
+    let location = useLocation();
+    let from = location.state?.from?.pathname || "/";
     if (token) {
-        navigate(from, { replace: true });
+        navigate("/");
     }
+    const {
+        formState: { errors },
+        register,
+        handleSubmit,
+    } = useForm();
 
-    const handleLogin = data => {
+    const handleSubmitData = (data) => {
         console.log(data);
-        setLoginError('');
-        signIn(data.email, data.password)
-            .then(result => {
+        logInUser(data.email, data.password)
+            .then((result) => {
                 const user = result.user;
                 console.log(user);
-                setLoginUserEmail(data.email);
+                toast.success("Account Create Successfully");
+                setLoginUserEmail(user.email);
+                // navigate(from, { replace: true });
             })
-            .catch(error => {
-                console.log(error.message)
-                setLoginError(error.message)
-
+            .catch((err) => {
+                setError(err.message);
+                console.log(err);
             });
-    }
+    };
+    const handleGoogleLogin = () => {
+        googleLogin()
+            .then((result) => {
+                const user = result.user;
+                console.log(user);
+                toast.success("Account Create Successfully");
+                navigate(from, { replace: true });
+            })
+            .catch((err) => {
+                setError(err.message);
+                console.log(err);
+            });
+    };
+
+    const passwordForget = () => {
+        resetPass(forget)
+            .then((result) => {
+                toast.success("Password Reset Success..Check your Email Address");
+            })
+            .catch((err) => {
+                setError(err.message);
+                console.log(err);
+            });
+    };
 
     return (
-        <div className='h-[800px] flex justify-center items-center'>
-            <div className='w-96 p-7'>
-                <h2 className='text-xl text-center'>Login</h2>
-                <form onSubmit={handleSubmit(handleLogin)}>
-                    <div className="form-control w-full max-w-xs">
-                        <label className="label">
-                            <span className="label-text">Email</span>
-                        </label>
-                        <input type="email" {...register("email", { required: "Email Addrss is required" })} className="input input-bordered w-full max-w-xs" />
-                        {errors.email && <p className='text-red-600'>{errors.email?.message}</p>}
-                    </div>
-                    <div className="form-control w-full max-w-xs">
-                        <label className="label">
-                            <span className="label-text">Password</span>
-                        </label>
-                        <input type="password" {...register("password", { required: "password is required", minLength: { value: 6, message: 'Password must be 6 characters or longer' } })}
-                            className="input input-bordered w-full max-w-xs" />
-                        <label className="label">
-                            <span className="label-text">Forget Password</span>
-                        </label>
-                        {errors.password && <p className='text-red-600'>{errors.password?.message}</p>}
-                    </div>
-                    <input className='btn btn-accent w-full' value="Login" type="submit" />
+        <div className=" h-screen flex justify-center items-center my-[100px] lg:my-0 w-[96%] mx-auto">
+            <div className="w-[385px] h-[550px] border border-gray-400 shadow-2xl rounded-lg p-[29px]">
+                <form onSubmit={handleSubmit(handleSubmitData)}>
+                    <h1 className="mb-[20px] text-2xl font-bold font-serif">Login</h1>
+                    <label className="label">
+                        <span className="text-md text-black">Email</span>
+                    </label>
+                    <input
+                        type="email"
+                        className="input input-bordered w-full max-w-xs"
+                        {...register("email", { required: "Email Address is required" })}
+                    />
+                    {errors.email && (
+                        <p className="text-red-600 text-start">{errors.email?.message}</p>
+                    )}
+                    <label className="label">
+                        <span className="text-md text-black">Password</span>
+                    </label>
+                    <input
+                        type="password"
+                        className="input input-bordered w-full max-w-xs"
+                        {...register("password", {
+                            required: "Password is required",
+                            minLength: {
+                                value: 6,
+                                message: "Password need must 6 corrector or longer",
+                            },
+                        })}
+                    />
+                    {errors.password && (
+                        <p className="text-red-600 text-start">
+                            {errors.password?.message}
+                        </p>
+                    )}
+                    {error && <p className="text-red-600 text-start">{error}</p>}
+                    <label
+                        htmlFor="my-modal"
+                        className="mr-[160px] md:mr-[190px] cursor-pointer"
+                    >
+                        Forgot Password ?
+                    </label>
+                    {/* modal */}
                     <div>
-                        {loginError && <p className='text-red-600'>{loginError}</p>}
+                        <input type="checkbox" id="my-modal" className="modal-toggle" />
+                        <div className="modal text-start">
+                            <div className="modal-box">
+                                <h3 className="font-bold text-lg">Reset Password!</h3>
+                                <input
+                                    onChange={(e) => setForget(e.target.value)}
+                                    type="text"
+                                    className="py-4 mt-4 input input-bordered input-accent w-full"
+                                    name="forget"
+                                    id=""
+                                    placeholder="Email...."
+                                />
+                                <div onClick={passwordForget} className="modal-action">
+                                    <label htmlFor="my-modal" className="btn">
+                                        forget
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <input className="btn w-full mt-3" type="submit" value="Login" />
                 </form>
-                <p className='mt-2'>New to Doctors Portal? <Link className='text-secondary' to="/signup">Create new account</Link></p>
+                <div className="flex gap-2 mt-4">
+                    <p>New to Doctors Portal?</p>
+                    <Link to="/signup" className="text-[#19D3AE] hover:underline">
+                        Create new account
+                    </Link>
+                </div>
                 <div className="divider">OR</div>
-                <button className='btn btn-outline w-full'>CONTINUE WITH GOOGLE</button>
+                <button
+                    onClick={handleGoogleLogin}
+                    className="btn w-full mt-[20px] btn-outline"
+                >
+                    CONTINUE WITH GOOGLE
+                </button>
             </div>
         </div>
     );
